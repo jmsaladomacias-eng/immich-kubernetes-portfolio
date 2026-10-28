@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: immich-postgres-v2
+  namespace: immich
+spec:
+  serviceName: database-v2
+  replicas: 1
+  selector:
+    matchLabels:
+      app: immich-postgres-v2
+  template:
+    metadata:
+      labels:
+        app: immich-postgres-v2
+    spec:
+      containers:
+        - name: postgres
+          image: ghcr.io/immich-app/postgres:18-vectorchord0.5.3-pgvector0.8.1
+          ports:
+            - containerPort: 5432
+              name: postgres
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: immich-postgres-v2-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: immich-postgres-v2-secret
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: immich-postgres-v2-secret
+                  key: POSTGRES_DB
+            - name: POSTGRES_INITDB_ARGS
+              value: "--data-checksums"
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: immich-postgres-v2-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: database-v2
+  namespace: immich
+spec:
+  selector:
+    app: immich-postgres-v2
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+  type: ClusterIP

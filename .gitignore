@@ -1,0 +1,40 @@
+# Local backups / rollback artifacts
+
+# Local backups and rollback artifacts — never commit
+backup-*.sql
+backup-*.yaml
+backup-*.yml
+backup-*.dump
+backup-*.tar
+backup-*.tar.gz
+
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+secrets/
+*.secret.yaml
+*.secret.yml
+
+# Local Kubernetes outputs and temporary files
+*.kubeconfig
+kubectl-*.yaml
+kubectl-*.yml
+
+# Editor and operating-system artifacts
+.DS_Store
+Thumbs.db
+
+
+# Archived legacy manifests — local only
+archive-local/
+
+# Private project notes — do not publish
+/docs/obsidian/
+
+# Raw Trivy reports — review and publish only curated summaries
+/reports/trivy/*.json
+/reports/trivy/*.txt
+
+# Local security reports — publish only reviewed summaries
+/reports/

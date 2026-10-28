@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: immich-data-v2-pv
+spec:
+  capacity:
+    storage: 90Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: immich-data-v2
+  local:
+    path: /mnt/immich-ssd/immich-data-v2
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - k3s-node
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: immich-data-v2-pvc
+  namespace: immich
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: immich-data-v2
+  resources:
+    requests:
+      storage: 90Gi
