@@ -16,7 +16,7 @@ The lab runs on a single-node K3s cluster hosted on an Ubuntu virtual machine on
 - Reduce the risk of accidental changes to original media through a read-only mount.
 - Diagnose workload, storage, and node resource-pressure issues using Kubernetes state, events, and logs.
 - Document troubleshooting and recovery decisions.
-- Validate declarative manifests using server-side dry-run.
+- Practice declarative manifest validation using local YAML checks and Kubernetes server-side dry-run, documenting environment-specific validation failures.
 - Demonstrate practical skills relevant to cloud architecture, solutions architecture, and technical presales / sales engineering.
 
 ## Architecture Overview
@@ -148,6 +148,8 @@ kubectl apply --dry-run=server -f k8s/redis-exporter-v2.yaml
 These commands illustrate the validation workflow. They are not proof that all seven manifests currently pass; record the date and outcome when running them against the intended cluster.
 
 ## Access and Operational Checks
+
+A NodePort service does not by itself establish Internet exposure; actual reachability depends on node networking, routing, and firewall rules. Restrict access to the intended network and users.
 
 The Immich web service is documented as a NodePort:
 
@@ -283,9 +285,24 @@ immich-kubernetes-portfolio/
 └── README.md
 ```
 
-This is the intended public-facing structure, not a verified inventory of the current working tree. Keep internal notes, command transcripts, local backups, credentials, and unreviewed scan artifacts out of the public repository. Publish a `reports/` directory only if it contains explicitly reviewed, curated material.
+The repository contains the README, seven Kubernetes manifest files, and a `.gitignore`. The manifests describe the lab configuration documented in this project.
 
-Before publication, review the manifests and Git history for private IP addresses, hostnames, usernames, personal paths, credentials, and other environment-specific details. Anonymization must preserve manifest validity and should not silently change the deployment's intended behavior. `.gitignore` prevents selected untracked files from being added by default; it does not remove files already tracked in Git or erase them from history.
+## Reproducibility and Safe Adaptation
+
+The node hostname and local storage paths in the manifests are environment-specific values that must be reviewed and adapted before deployment. All seven YAML files passed local syntax and basic document-structure checks. However, server-side dry-run validation of the two PersistentVolume manifests against the existing lab cluster was rejected because `nodeAffinity` is immutable on the already-created volumes, whose node affinity differs from the hostname declared in the public manifests. This does not establish that the manifests have passed server-side validation in a clean target cluster.
+
+These manifests document a single-node K3s lab and are provided as an engineering reference, not as a turnkey deployment.
+
+Before applying them to another environment:
+
+- Verify the Kubernetes node name and all host paths.
+- Confirm that the required directories and storage mounts exist on the intended node.
+- Review PersistentVolume and PersistentVolumeClaim bindings, reclaim policies, and storage capacity.
+- Provision the required Kubernetes Secrets separately; never commit secret values.
+- Review network exposure, particularly the Immich NodePort service, against the target environment's access requirements.
+- Validate the manifests against the target cluster and confirm workload readiness after deployment.
+
+The configuration depends on local storage and a single node. It does not provide high availability, replicated storage, or a demonstrated disaster-recovery procedure. Validate backups and restoration separately before using a similar design for important data.
 
 ## About the Author
 
